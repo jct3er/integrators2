@@ -1,4 +1,5 @@
 import sys
+import numpy as np
 
 def main():
     # Check if the user provided the correct number of arguments
@@ -19,9 +20,27 @@ def main():
 
     # ******* Add your code here
 
-    volume = 0.0
-    stdev = 0.0
+    lenght = max(r1, r2)
+    z = max(r1, r2+a)
+    box_dim = np.append(np.ones(d-1)*lenght, z)
 
+    points = np.random.uniform(-box_dim, box_dim, (N, d))
+
+    dist1 = np.linalg.norm(points, axis=1)
+    dist2 = np.linalg.norm(points+np.append(np.zeros(d-1), a), axis=1)
+
+
+    inside = np.dot(np.where(dist1<=r1, 1, 0), np.where(dist2<=r2, 1, 0))
+
+
+    dev = np.sqrt((inside-inside**2/N)/(N-1))
+
+    
+    volume = np.prod(2*box_dim)*inside/N
+    stdev = dev/np.sqrt(N)
+
+
+    
     # *******
 
     # Do not change the format below

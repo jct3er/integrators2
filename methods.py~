@@ -1,0 +1,104 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import scipy as sp
+
+def grid_int(n_points):
+
+    one_dim = np.linspace(-1, 1, n_points)
+
+    xv, yv, zv, wv, tv = np.meshgrid(one_dim, one_dim, one_dim, one_dim, one_dim, indexing='ij')
+
+    points = np.stack([xv.ravel(), yv.ravel(), zv.ravel(), wv.ravel(), tv.ravel()], axis=1)
+
+    lengths = np.linalg.norm(points, axis=1)
+
+    inside = np.sum(np.where(lengths <= 1, 1, 0))
+
+    
+    return inside/n_points**5*2**5
+
+
+def pseudo_rand(n_array):
+
+    n_points = n_array[-1]
+
+    vals = []
+
+    points = np.random.uniform(-1, 1, (n_points, 5))
+
+    lengths = np.linalg.norm(points, axis = 1)
+
+    for i in n_array:
+
+        inside = np.sum(np.where(lengths[:i] <= 1, 1, 0))
+        vals.append(inside)
+
+    return np.array(vals)/n_points*2**5
+
+
+def quasi_rand(n_array):
+    Sobol = sp.stats.qmc.Sobol(d=5)
+
+    n_points = n_array[-1]
+    vals = []
+
+    points= Sobol.random(n_points)
+    points = (np.array(points)-0.5)*2
+
+    lengths = np.linalg.norm(points, axis = 1)
+
+    for i in n_array:
+
+        inside  = np.sum(np.where(lengths[:i] <= 1, 1, 0))
+        vals.append(inside)
+
+    return np.array(vals)/n_points*2**5
+
+
+def err(x):
+    return np.abs((x - 8*np.pi**2/15)/(8*np.pi**2/15))
+
+
+
+if __name__ == "__main__":
+    n_grid = np.linspace(2, 37, 25, dtype=int)
+    n_rand = np.logspace(1, 8,  dtype=int)
+
+    grid = []
+
+    for i in n_grid:
+        gridval = grid_int(i)
+        grid.append(err(gridval))
+
+    pseudoval = pseudo_rand(n_rand)
+    quasval = quasi_rand(n_rand)
+
+    for i in pseudoval:
+        print(f"Estimate = {i:.4f}, Real = {8*np.pi**2/15:.4f}")
+
+    err_v = np.vectorize(err)
+
+    pseud = err_v(pseudoval)
+    quas = err_v(quasval)
+
+        
+
+    fig= plt.figure(figsize=[16,9])
+
+
+    plt.semilogy(np.sqrt(np.pow(n_grid, 5)), grid, label = "Grid")
+
+    plt.semilogy(np.sqrt(n_rand), pseud, label="Pseudo-Random")
+
+    plt.semilogy(np.sqrt(n_rand), quas, label="Quasi-Random")
+
+    plt.ylabel("Relative Error")
+    plt.xlabel("Sqrt(N)")
+    plt.legend()
+
+
+    plt.savefig("methods.png")
+
+    
+
+
