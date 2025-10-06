@@ -6,13 +6,17 @@ def grid_int(n_points):
 
     one_dim = np.linspace(-1, 1, n_points)
 
-    xv, yv, zv, wv, tv = np.meshgrid(one_dim, one_dim, one_dim, one_dim, one_dim, indexing='ij')
+    inside = 0
 
-    points = np.stack([xv.ravel(), yv.ravel(), zv.ravel(), wv.ravel(), tv.ravel()], axis=1)
+    for i in np.linspace(-1,1,n_points):
 
-    lengths = np.linalg.norm(points, axis=1)
+        xv, yv, zv, wv = np.meshgrid(one_dim, one_dim, one_dim, one_dim, indexing='ij')
 
-    inside = np.sum(np.where(lengths <= 1, 1, 0))
+        points = np.stack([xv.ravel(), yv.ravel(), zv.ravel(), wv.ravel(), np.ones(len(xv.ravel()))*i], axis=1)
+
+        lengths = np.linalg.norm(points, axis=1)
+
+        inside += np.sum(np.where(lengths <= 1, 1, 0))
 
     
     return inside/n_points**5*2**5
@@ -63,7 +67,7 @@ def err(x):
 
 
 if __name__ == "__main__":
-    n_grid = np.linspace(2, 37, 25, dtype=int)
+    n_grid = np.linspace(2, 40, 25, dtype=int)
     n_rand = np.logspace(1, 8, dtype=int)
 
     grid = []
