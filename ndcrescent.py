@@ -21,7 +21,7 @@ def integrator(d, N, r1, r2, a):
 
     
     volume = np.prod(2*box_dim)*inside/N
-    stdev = dev/np.sqrt(N)
+    stdev = dev/np.sqrt(N)*volume
 
     return volume, stdev
 
